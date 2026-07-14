@@ -1,2 +1,11 @@
+[project]
+name = "cccd-ocr"
+version = "0.1.0"
+dependencies = [
+    "flask",
+    "flask-cors",
+    "google-genai"
+]
+
 [tool.vercel]
 entrypoint = "ocr_server:app"
