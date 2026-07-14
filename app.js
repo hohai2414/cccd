@@ -69,7 +69,9 @@ const SAMPLE_CCCD_DATA = {
 
 let employees = [];
 let isBackendConnected = false;
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1")
+  ? "http://localhost:5000"
+  : "";
 
 // ================= APP INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", () => {

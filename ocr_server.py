@@ -1,24 +1,13 @@
 import os
 import json
-import tempfile
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from google import genai
-from paddleocr import PaddleOCR
+from google.genai import types
 
 # Khởi tạo Flask với static_folder trỏ tới thư mục hiện tại để serve các file giao diện
 app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app)  # Cho phép gọi API từ Frontend (trình duyệt) chạy ở origin khác
-
-# Khởi tạo PaddleOCR lazily để server start nhanh hơn
-ocr_model = None
-
-def get_ocr_model():
-    global ocr_model
-    if ocr_model is None:
-        print("Đang tải model PaddleOCR (lang='vi')... Lần đầu chạy có thể mất vài phút.")
-        ocr_model = PaddleOCR(use_angle_cls=True, lang="vi")
-    return ocr_model
 
 # Khởi tạo Gemini Client từ biến môi trường GEMINI_API_KEY
 # (Hãy đảm bảo đã set biến môi trường này trước khi chạy server)
@@ -44,48 +33,29 @@ def scan_cccd():
         }), 500
 
     try:
-        # Lưu file tạm thời để PaddleOCR đọc
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-            temp_path = temp_file.name
-            file.save(temp_path)
+        # Đọc dữ liệu file ảnh dưới dạng bytes
+        image_bytes = file.read()
+        mime_type = file.content_type or "image/jpeg"
 
-        print(f"Đang xử lý file tạm: {temp_path}")
-
-        # Chạy OCR
-        ocr = get_ocr_model()
-        result = ocr.ocr(temp_path, cls=True)
-
-        # Xóa file tạm ngay sau khi quét xong
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-
-        # Gom tất cả các đoạn text
-        raw_texts = []
-        for idx in range(len(result)):
-            res = result[idx]
-            if res:
-                for line in res:
-                    raw_texts.append(line[1][0])
-
-        ocr_merged_text = "\n".join(raw_texts)
-        print("--- Văn bản trích xuất thô ---")
-        print(ocr_merged_text)
-        print("-------------------------------")
-
-        if not ocr_merged_text.strip():
-            return jsonify({"error": "Không thể trích xuất văn bản từ hình ảnh này. Hãy thử ảnh rõ nét hơn."}), 422
-
-        # Cấu trúc hóa với Gemini
+        # Cấu trúc hóa trực tiếp với Gemini sử dụng Multimodal
         system_instruction = """
-        Bạn là một trợ lý AI chuyên cấu trúc hóa văn bản thô từ OCR của CCCD Việt Nam.
+        Bạn là một trợ lý AI chuyên cấu trúc hóa thông tin từ ảnh chụp CCCD (Căn cước công dân) Việt Nam.
+        Đọc và trích xuất các thông tin từ ảnh mặt trước CCCD được cung cấp.
         Trả về CHỈ một chuỗi JSON sạch (không bọc trong dấu ```json) có các key: 
         "ho_va_ten", "ngay_sinh", "so_cccd", "dia_chi", "gioi_tinh", "que_quan".
+        Nếu có trường nào không đọc được, hãy trả về giá trị rỗng "".
         """
-        user_prompt = f"Hãy trích xuất thông tin từ đoạn văn bản OCR sau:\n\n{ocr_merged_text}"
+        user_prompt = "Hãy phân tích hình ảnh CCCD này và trích xuất thông tin chính xác tuyệt đối bằng tiếng Việt có dấu."
 
         response = client.models.generate_content(
             model="gemini-1.5-flash",
-            contents=user_prompt,
+            contents=[
+                types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=mime_type,
+                ),
+                user_prompt
+            ],
             config={
                 "system_instruction": system_instruction,
                 "response_mime_type": "application/json",
@@ -106,8 +76,9 @@ def health_check():
     return jsonify({
         "status": "healthy",
         "gemini_configured": client is not None,
-        "paddleocr_loaded": ocr_model is not None
+        "gemini_multimodal": True
     })
+
 
 
 @app.route("/")
