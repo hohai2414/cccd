@@ -48,7 +48,7 @@ def scan_cccd():
         user_prompt = "Hãy phân tích hình ảnh CCCD này và trích xuất thông tin chính xác tuyệt đối bằng tiếng Việt có dấu."
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.1-pro",
             contents=[
                 types.Part.from_bytes(
                     data=image_bytes,
