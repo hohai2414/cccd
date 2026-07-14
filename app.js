@@ -442,7 +442,7 @@ Hãy đọc kỹ hình ảnh mặt trước thẻ CCCD được đính kèm và 
 Trả về CHỈ một chuỗi JSON sạch (không bọc trong dấu \`\`\`json) có các key: "ho_va_ten", "ngay_sinh", "so_cccd", "dia_chi", "gioi_tinh", "que_quan". 
 Các thông tin tiếng Việt có dấu phải được đọc chính xác tuyệt đối.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
