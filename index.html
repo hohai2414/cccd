@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Portal & CCCD OCR Scanner - Minh Anh</title>
+  
+  <!-- Google Fonts: Outfit (sans-serif) & Playfair Display (serif for elegant numbers) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Excel Export (SheetJS) via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Trình giả lập Điện thoại & Desktop Container -->
+  <div class="app-container">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        
+        <!-- ================= TOP BAR ================= -->
+        <header class="app-header">
+          <div class="user-profile-header">
+            <div class="avatar-container">
+              <!-- Thay thế avatar thật bằng icon/chữ nếu không có ảnh, hoặc dùng ảnh placeholder cao cấp -->
+              <div class="avatar">MA</div>
+            </div>
+            <div class="welcome-text">
+              <span class="greeting">Chào buổi sáng,</span>
+              <span class="username">Minh Anh</span>
+            </div>
+          </div>
+          <button class="notification-btn" id="notificationBtn">
+            <i class="fa-regular fa-bell"></i>
+            <span class="badge"></span>
+          </button>
+        </header>
+
+        <!-- ================= CONTENT AREA ================= -->
+        <main class="app-content">
+          
+          <!-- ================= TAB: DASHBOARD ================= -->
+          <section id="tab-dashboard" class="tab-panel active">
+            <!-- Banner Tin vui hôm nay -->
+            <div class="hero-banner">
+              <h2>Tin vui hôm nay?</h2>
+              <p>Có <span class="highlight-count" id="banner-new-count">3</span> nhân viên mới chuẩn bị gia nhập đội ngũ vào tuần tới.</p>
+            </div>
+
+            <!-- Thống kê nhanh -->
+            <div class="section-title-container">
+              <h3>Thống kê nhanh</h3>
+            </div>
+            <div class="stats-carousel">
+              <div class="stat-card">
+                <div class="stat-icon-wrapper red-bg">
+                  <i class="fa-regular fa-id-badge"></i>
+                </div>
+                <div class="stat-number serif-font" id="stat-active-employees">124</div>
+                <div class="stat-label">Nhân viên đang làm việc</div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-icon-wrapper orange-bg">
+                  <i class="fa-regular fa-calendar-check"></i>
+                </div>
+                <div class="stat-number serif-font text-orange">08</div>
+                <div class="stat-label">Yêu cầu chờ duyệt</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon-wrapper blue-bg">
+                  <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="stat-number serif-font text-blue" id="stat-pending-employees">03</div>
+                <div class="stat-label">Chờ onboarding</div>
+              </div>
+            </div>
+
+            <!-- Lối tắt tác vụ -->
+            <div class="section-title-container">
+              <h3>Lối tắt tác vụ</h3>
+            </div>
+            <div class="task-grid">
+              <div class="task-item" onclick="switchTab('employees')">
+                <div class="task-icon-box red-badge">
+                  <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <span>Danh sách</span>
+              </div>
+              <div class="task-item" id="btn-quick-ocr">
+                <div class="task-icon-box orange-badge">
+                  <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <span>Quét CCCD</span>
+              </div>
+              <div class="task-item" onclick="showFeatureNotice('Bảng lương')">
+                <div class="task-icon-box red-badge">
+                  <i class="fa-solid fa-money-check-dollar"></i>
+                </div>
+                <span>Bảng lương</span>
+              </div>
+              <div class="task-item" onclick="showFeatureNotice('Đào tạo')">
+                <div class="task-icon-box orange-badge">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <span>Đào tạo</span>
+              </div>
+            </div>
+
+            <!-- Thông báo quan trọng -->
+            <div class="section-title-container">
+              <h3>Thông báo quan trọng</h3>
+              <a href="#" class="view-all" onclick="showFeatureNotice('Xem tất cả thông báo')">Xem tất cả</a>
+            </div>
+            <div class="announcements-list">
+              <div class="announcement-card border-red">
+                <div class="announcement-meta">
+                  <span class="tag tag-red">NỘI BỘ</span>
+                  <span class="time">2 giờ trước</span>
+                </div>
+                <h4>Cập nhật chính sách làm việc Hybrid 2024</h4>
+                <p>Bắt đầu từ tháng tới, công ty sẽ áp dụng lịch làm việc linh hoạt mới cho tất cả các phòng...</p>
+              </div>
+
+              <div class="announcement-card border-orange">
+                <div class="announcement-meta">
+                  <span class="tag tag-orange">SỰ KIỆN</span>
+                  <span class="time">Hôm qua</span>
+                </div>
+                <h4>Team Building: Hành trình gắn kết tại Đà Lạt</h4>
+                <p>Cùng chuẩn bị hành trang cho chuyến đi nghỉ dưỡng và gắn kết đội ngũ lớn nhất...</p>
+              </div>
+
+              <div class="announcement-card border-gray">
+                <div class="announcement-meta">
+                  <span class="tag tag-gray">THÔNG BÁO</span>
+                  <span class="time">3 ngày trước</span>
+                </div>
+                <h4>Bảo trì hệ thống ERP định kỳ</h4>
+                <p>Hệ thống quản trị sẽ tạm ngưng hoạt động từ 22h00 tới Thứ Bảy để nâng cấp hạ tầng...</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= TAB: EMPLOYEES ================= -->
+          <section id="tab-employees" class="tab-panel">
+            <div class="employees-header-row">
+              <h3>Hồ sơ nhân viên</h3>
+              <div class="action-buttons">
+                <button class="btn btn-secondary" id="btn-export-excel" title="Xuất danh sách ra file Excel">
+                  <i class="fa-solid fa-file-excel"></i> Xuất Excel
+                </button>
+                <button class="btn btn-primary" id="btn-add-employee">
+                  <i class="fa-solid fa-plus"></i> Thêm mới
+                </button>
+              </div>
+            </div>
+
+            <!-- Thanh tìm kiếm & Bộ lọc -->
+            <div class="search-filter-bar">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="employee-search" placeholder="Tìm theo tên hoặc số CCCD...">
+              </div>
+            </div>
+
+            <!-- Danh sách nhân viên -->
+            <div class="employee-list" id="employee-list-container">
+              <!-- Sẽ render động qua Javascript -->
+            </div>
+          </section>
+
+          <!-- ================= TAB: ATTENDANCE ================= -->
+          <section id="tab-attendance" class="tab-panel">
+            <h3>Chấm công & Điểm danh</h3>
+            <div class="calendar-container">
+              <div class="calendar-header">
+                <h4 id="calendar-month-year">Tháng 7, 2026</h4>
+                <div class="calendar-nav">
+                  <button onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                  <button onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+              </div>
+              <div class="calendar-weekdays">
+                <div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div>
+              </div>
+              <div class="calendar-days" id="calendar-days-grid">
+                <!-- Sẽ render động qua Javascript -->
+              </div>
+            </div>
+
+            <div class="attendance-summary-card">
+              <div class="summary-item">
+                <span class="num">18</span>
+                <span class="lbl">Ngày công đã làm</span>
+              </div>
+              <div class="summary-item">
+                <span class="num">0</span>
+                <span class="lbl">Đi muộn / Về sớm</span>
+              </div>
+              <div class="summary-item">
+                <span class="num">1</span>
+                <span class="lbl">Ngày nghỉ phép</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= TAB: PROFILE ================= -->
+          <section id="tab-profile" class="tab-panel">
+            <div class="profile-card">
+              <div class="profile-avatar">MA</div>
+              <h3>Minh Anh</h3>
+              <p class="role">Quản trị nhân sự (HR Manager)</p>
+              <span class="status-pill active-status">Đang hoạt động</span>
+            </div>
+
+            <div class="profile-details-list">
+              <div class="profile-detail-item">
+                <div class="detail-icon"><i class="fa-regular fa-envelope"></i></div>
+                <div class="detail-text">
+                  <span class="label">Email</span>
+                  <span class="value">minhanh.hr@company.com</span>
+                </div>
+              </div>
+              <div class="profile-detail-item">
+                <div class="detail-icon"><i class="fa-solid fa-phone"></i></div>
+                <div class="detail-text">
+                  <span class="label">Số điện thoại</span>
+                  <span class="value">090 123 4567</span>
+                </div>
+              </div>
+              <div class="profile-detail-item">
+                <div class="detail-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <div class="detail-text">
+                  <span class="label">API Server OCR</span>
+                  <span class="value link-color" id="backend-status-indicator">Đang ngắt kết nối (Chạy simulated)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-actions" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+              <!-- Cấu hình Gemini API Key trực tiếp từ browser -->
+              <div class="api-key-config-card" style="background-color: var(--card-bg); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); text-align: left;">
+                <label for="gemini-key-input" style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">
+                  <i class="fa-solid fa-key" style="color: var(--primary-color);"></i> Cấu hình Gemini API Key (Quét trực tiếp không cần server)
+                </label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="password" id="gemini-key-input" placeholder="Dán Gemini API Key của bạn tại đây..." style="flex: 1; padding: 8px 10px; font-size: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); outline: none;">
+                  <button class="btn btn-primary" onclick="saveGeminiKey()" style="padding: 8px 12px; font-size: 11px; box-shadow: none;">Lưu</button>
+                </div>
+                <span id="gemini-key-status" style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 6px; font-weight: 500;"></span>
+              </div>
+
+              <button class="btn btn-secondary btn-block" onclick="checkBackendHealth()" style="padding: 10px;">
+                <i class="fa-solid fa-arrows-rotate"></i> Kiểm tra kết nối Python Server
+              </button>
+            </div>
+          </section>
+        </main>
+
+        <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+        <nav class="bottom-nav">
+          <div class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard">
+            <div class="icon-container">
+              <i class="fa-solid fa-house"></i>
+            </div>
+            <span>Dashboard</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('employees')" id="nav-employees">
+            <div class="icon-container">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <span>Employees</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('attendance')" id="nav-attendance">
+            <div class="icon-container">
+              <i class="fa-regular fa-calendar-days"></i>
+            </div>
+            <span>Attendance</span>
+          </div>
+          <div class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+            <div class="icon-container">
+              <i class="fa-regular fa-user"></i>
+            </div>
+            <span>Profile</span>
+          </div>
+        </nav>
+
+        <!-- ================= MODAL: OCR CCCD SCANNER & ADD EMPLOYEE ================= -->
+        <div class="modal-overlay" id="ocr-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Thêm Nhân viên mới bằng CCCD OCR</h3>
+              <button class="close-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+              
+              <!-- Bước 1: Upload và quét ảnh -->
+              <div id="ocr-step-upload" class="ocr-step active">
+                <p class="step-guide">Hãy tải ảnh mặt trước CCCD hoặc sử dụng ảnh mẫu dưới đây để thử nghiệm nhanh.</p>
+                
+                <div class="drop-zone" id="dropzone">
+                  <input type="file" id="file-input" accept="image/*" style="display: none;">
+                  <div class="drop-zone-prompt">
+                    <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                    <p>Kéo thả ảnh mặt trước CCCD vào đây hoặc <span>chấp nhận upload</span></p>
+                    <span class="file-limits">Định dạng JPG, PNG (tối đa 5MB)</span>
+                  </div>
+                  
+                  <div class="scanning-wrapper" id="scanning-wrapper" style="display: none;">
+                    <img id="preview-image" src="" alt="CCCD Preview">
+                    <div class="laser-line"></div>
+                  </div>
+                </div>
+
+                <!-- Dùng thử với ảnh mẫu -->
+                <div class="sample-images-section">
+                  <span class="sample-title">Thử nhanh với ảnh mẫu sẵn có:</span>
+                  <div class="sample-grid">
+                    <div class="sample-card" onclick="loadSample(1)">
+                      <i class="fa-solid fa-address-card"></i>
+                      <span>Mẫu CCCD 1 (Nam)</span>
+                    </div>
+                    <div class="sample-card" onclick="loadSample(2)">
+                      <i class="fa-solid fa-address-card"></i>
+                      <span>Mẫu CCCD 2 (Nữ)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Thanh tiến trình OCR -->
+                <div class="ocr-progress-container" id="ocr-progress" style="display: none;">
+                  <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="progress-bar"></div>
+                  </div>
+                  <ul class="progress-steps" id="progress-steps-list">
+                    <li id="pstep-1"><i class="fa-solid fa-circle-notch fa-spin"></i> Đang đọc file ảnh...</li>
+                    <li id="pstep-2"><i class="fa-regular fa-circle"></i> Đang chạy PaddleOCR tiếng Việt...</li>
+                    <li id="pstep-3"><i class="fa-regular fa-circle"></i> Đang phân tích thông tin với Gemini-3.5-Flash...</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Bước 2: Xem kết quả và điền thông tin nhân viên -->
+              <div id="ocr-step-result" class="ocr-step">
+                <p class="step-guide">Thông tin trích xuất bằng AI từ CCCD. Vui lòng kiểm tra lại trước khi lưu vào danh sách.</p>
+                
+                <form id="employee-form" onsubmit="saveEmployee(event)">
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="f_so_cccd">Mã số CCCD <span class="required">*</span></label>
+                      <input type="text" id="f_so_cccd" required placeholder="Ví dụ: 037199001234">
+                    </div>
+                    <div class="form-group">
+                      <label for="f_ho_va_ten">Họ và tên <span class="required">*</span></label>
+                      <input type="text" id="f_ho_va_ten" required placeholder="Ví dụ: NGUYỄN VĂN A">
+                    </div>
+                    <div class="form-group">
+                      <label for="f_ngay_sinh">Ngày tháng năm sinh <span class="required">*</span></label>
+                      <input type="text" id="f_ngay_sinh" required placeholder="Ví dụ: 15/08/1995">
+                    </div>
+                    <div class="form-group">
+                      <label for="f_gioi_tinh">Giới tính <span class="required">*</span></label>
+                      <select id="f_gioi_tinh" required>
+                        <option value="">Chọn giới tính</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                      </select>
+                    </div>
+                    <div class="form-group full-width">
+                      <label for="f_que_quan">Quê quán</label>
+                      <input type="text" id="f_que_quan" placeholder="Ví dụ: Gia Lộc, Hải Dương">
+                    </div>
+                    <div class="form-group full-width">
+                      <label for="f_dia_chi">Địa chỉ thường trú <span class="required">*</span></label>
+                      <input type="text" id="f_dia_chi" required placeholder="Ví dụ: Phường Bến Nghé, Quận 1, TP. HCM">
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetOCRModal()">Quét lại</button>
+                    <button type="submit" class="btn btn-primary">Lưu hồ sơ nhân viên</button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Script logic của ứng dụng -->
+  <script src="app.js"></script>
+</body>
+</html>

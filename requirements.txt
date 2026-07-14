@@ -1,0 +1,7 @@
+flask
+flask-cors
+paddleocr
+google-genai
+pandas
+openpyxl
+# Lưu ý: Với Windows, PaddleOCR cần cài đặt C++ Redistributable hoặc Microsoft C++ Build Tools nếu chưa có.
