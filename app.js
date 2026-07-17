@@ -442,38 +442,69 @@ Hãy đọc kỹ hình ảnh mặt trước thẻ CCCD được đính kèm và 
 Trả về CHỈ một chuỗi JSON sạch (không bọc trong dấu \`\`\`json) có các key: "ho_va_ten", "ngay_sinh", "so_cccd", "dia_chi", "gioi_tinh", "que_quan". 
 Các thông tin tiếng Việt có dấu phải được đọc chính xác tuyệt đối.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: mimeType,
-                    data: base64Data
-                  }
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        })
-      });
+      // Danh sách model ưu tiên: ổn định nhất trước, mới nhất sau
+      const MODELS_TO_TRY = [
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-001",
+        "gemini-3.5-flash"
+      ];
       
-      if (!response.ok) {
-        const errJson = await response.json();
-        throw new Error(errJson.error?.message || "Lỗi gọi trực tiếp Gemini API.");
+      let lastError = null;
+      let textResult = null;
+      
+      for (const modelName of MODELS_TO_TRY) {
+        try {
+          console.log(`Đang thử model: ${modelName}...`);
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: prompt },
+                    {
+                      inlineData: {
+                        mimeType: mimeType,
+                        data: base64Data
+                      }
+                    }
+                  ]
+                }
+              ],
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            })
+          });
+          
+          if (!response.ok) {
+            const errJson = await response.json();
+            lastError = errJson.error?.message || `Model ${modelName} không khả dụng.`;
+            console.warn(`Model ${modelName} lỗi: ${lastError}`);
+            continue; // Thử model tiếp theo
+          }
+          
+          const apiRes = await response.json();
+          // Xử lý response: thinking models có thể trả về nhiều parts
+          const parts = apiRes.candidates[0].content.parts;
+          textResult = parts[parts.length - 1].text; // Lấy part cuối cùng (kết quả thực)
+          console.log(`Model ${modelName} thành công!`);
+          break; // Thoát vòng lặp khi thành công
+          
+        } catch (err) {
+          lastError = err.message;
+          console.warn(`Model ${modelName} exception: ${err.message}`);
+          continue;
+        }
       }
       
-      const apiRes = await response.json();
-      const textResult = apiRes.candidates[0].content.parts[0].text;
+      if (!textResult) {
+        throw new Error(lastError || "Tất cả các model đều không khả dụng. Vui lòng thử lại sau.");
+      }
+      
       resultData = JSON.parse(textResult);
       
     } else if (fileObj && isBackendConnected) {
